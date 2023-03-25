@@ -10,7 +10,7 @@ const routes = [
     path: '/home',
     name: 'Home',
     component: DefaultLayout,
-    redirect: '/dashboard',
+    redirect: '/categories',
     children: [
       {
         path: '/dashboard',
@@ -38,6 +38,12 @@ const routes = [
         name: 'Orders',
         component: () =>
           import(/* webpackChunkName: "orders"*/ '@/views/Orders.vue'),
+      },
+      {
+        path: '/products',
+        name: 'Products',
+        component: () =>
+          import(/* webpackChunkName: "orders"*/ '@/views/Products.vue'),
       },
       {
         path: '/theme',
