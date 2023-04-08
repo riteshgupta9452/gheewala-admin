@@ -22,6 +22,20 @@ const routes = [
           import(/* webpackChunkName: "dashboard" */ '@/views/Dashboard.vue'),
       },
       {
+        path: '/app-dashboard',
+        name: 'App Dashboard',
+        component: () =>
+          import(
+            /* webpackChunkName: "categories"*/ '@/views/AppDashboard.vue'
+          ),
+      },
+      {
+        path: '/banners',
+        name: 'Banners',
+        component: () =>
+          import(/* webpackChunkName: "categories"*/ '@/views/Banners.vue'),
+      },
+      {
         path: '/categories',
         name: 'Categories',
         component: () =>

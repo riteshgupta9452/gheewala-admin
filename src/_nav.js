@@ -11,6 +11,18 @@ export default [
   // },
   {
     component: 'CNavItem',
+    name: 'App Dashboard',
+    to: '/app-dashboard',
+    icon: 'cil-speedometer',
+  },
+  {
+    component: 'CNavItem',
+    name: 'Banners',
+    to: '/banners',
+    icon: 'cil-speedometer',
+  },
+  {
+    component: 'CNavItem',
     name: 'Categories',
     to: '/categories',
     icon: 'cil-speedometer',

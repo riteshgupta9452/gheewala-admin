@@ -36,7 +36,7 @@
                                     <CTableDataCell>{{ product.inventory }} </CTableDataCell>
                                     <CTableDataCell> {{ product.is_viewable }} </CTableDataCell>
                                     <CTableDataCell>
-                                        <template v-for="p in Object.keys(product.price)" v-key="p">
+                                        <template v-if="product.price" v-for="p in Object.keys(product.price)" v-key="p">
                                             <span><b>{{ p }} : </b> {{ product.price[p] }}</span><br>
                                         </template>
                                     </CTableDataCell>
