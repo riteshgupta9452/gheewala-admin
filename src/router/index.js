@@ -60,6 +60,12 @@ const routes = [
           import(/* webpackChunkName: "orders"*/ '@/views/Products.vue'),
       },
       {
+        path: '/offers',
+        name: 'Offers',
+        component: () =>
+          import(/* webpackChunkName: "orders"*/ '@/views/Offers.vue'),
+      },
+      {
         path: '/theme',
         name: 'Theme',
         redirect: '/theme/typography',

@@ -5,7 +5,7 @@
                 <CCard class="mb-4">
                     <CCardHeader> Banner </CCardHeader>
                     <CCardBody>
-                        <CButton color="primary" style="margin-bottom: 10px;" @click="() => { addBannerModal = true }">Add
+                        <CButton color="primary" style="margin-bottom: 10px;" @click="openAddBannerModal()">Add
                             new
                             banner</CButton>
                         <CTable align="middle" class="mb-0 border" hover responsive>
@@ -43,7 +43,7 @@
         </CRow>
         <CModal scrollable :visible="addBannerModal" backdrop="static" size="xl" @close="
             () => {
-                addBannerModal = false
+                addBannerModal = false;
             }
         ">
             <CModalHeader dismiss @close="
@@ -56,9 +56,11 @@
             <CModalBody>
                 <CForm>
                     <div class="mb-3">
-                        <CFormLabel for="select_icon">Select banner image</CFormLabel>
-                        <CFormInput id="select_icon" type="file" placeholder="Select banner" ref="iconImage"
-                            accept="image/*" @change="uploadIconImage" />
+                        <file-uploader :label="'Please Select Banner Image'" @upload="uploadIconImage"></file-uploader>
+                        <!-- <input type="text" v-model="banner.banner"> -->
+                        <p style="color: red;" v-for="error of v$.banner.banner.$errors" :key="error.$uid">
+                            {{ error.$message }}
+                        </p>
                     </div>
                     <div>
                         <CFormLabel class="col-form-label">Is viewable</CFormLabel>
@@ -70,7 +72,7 @@
                 </CForm>
             </CModalBody>
             <CModalFooter>
-                <CButton color="secondary" @click="() => { addBannerModal = false }">
+                <CButton color="secondary" @click="() => { addBannerModal = false; }">
                     Close
                 </CButton>
                 <CButton color="success" @click="saveBanner()">Save</CButton>
@@ -82,6 +84,9 @@
 <script>
 import { ref } from 'vue'
 import upload from "../mixins/upload.vue";
+import FileUploader from "@/components/FileUploader.vue"
+import useVuelidate from "@vuelidate/core"
+import { required, helpers } from "@vuelidate/validators";
 export default {
     name: 'Banners',
     mixins: [upload],
@@ -92,21 +97,36 @@ export default {
         return {
             banners,
             addBannerModal,
-            banner: { banner: null, is_viewable: false },
-            file
+            banner: ref({ banner: null, is_viewable: false }),
+            file,
+            v$: useVuelidate()
+        }
+    },
+    validations() {
+        return {
+            banner: {
+                banner: { required: helpers.withMessage("Banner is required", required) },
+                is_viewable: { required }
+            }
         }
     },
 
     components: {
+        FileUploader
     },
     methods: {
-        async uploadIconImage($event) {
-            const input = $event.target;
-            let file = input.files && input.files[0] ? input.files[0] : null
-            if (!file) {
-                return;
-            }
-            this.banner.banner = await this.uploadFile(file);
+        openAddBannerModal() {
+            this.banner = { banner: null, is_viewable: false }
+            this.v$.$reset()
+            this.addBannerModal = true
+        },
+        async uploadIconImage(imageUrl) {
+            // const input = $event.target;
+            // let file = input.files && input.files[0] ? input.files[0] : null
+            // if (!file) {
+            //     return;
+            // }
+            this.banner.banner = imageUrl;
 
         },
         getBanners() {
@@ -140,13 +160,16 @@ export default {
                 this.getBanners()
             })
         },
-        saveBanner() {
+        async saveBanner() {
+            const result = await this.v$.$validate()
+            if (!result) { return }
             const url = `${process.env.VUE_APP_API_URL}api/v1/admin/banners`
             this.axios.post(url, this.banner).then(() => {
                 this.$swal("Banner successfully added");
                 this.banner = { banner: null, is_viewable: false }
                 this.getBanners()
                 this.addBannerModal = false
+                this.v$.$reset()
             })
         }
     },

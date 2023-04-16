@@ -5,7 +5,7 @@
         <CCard class="mb-4">
           <CCardHeader> Categories </CCardHeader>
           <CCardBody>
-            <CButton color="primary" style="margin-bottom: 10px;" @click="() => { addCategoryModal = true }">Add new
+            <CButton color="primary" style="margin-bottom: 10px;" @click="openAddCategoryModal()">Add new
               category</CButton>
             <CTable align="middle" class="mb-0 border" hover responsive>
               <CTableHead color="light">
@@ -58,11 +58,15 @@
           <div class="mb-3">
             <CFormLabel for="label">Label</CFormLabel>
             <CFormInput id="label" type="text" placeholder="Enter category label (e.g. Ghee)" v-model="category.label" />
+            <p style="color: red;" v-for="error of v$.category.label.$errors" :key="error.$uid">
+              {{ error.$message }}
+            </p>
           </div>
           <div class="mb-3">
-            <CFormLabel for="select_icon">Select Icon</CFormLabel>
-            <CFormInput id="select_icon" type="file" placeholder="Select category icon" ref="iconImage" accept="image/*"
-              @change="uploadIconImage" />
+            <file-uploader :label="'Select Icon'" @upload="uploadIconImage"></file-uploader>
+            <p style="color: red;" v-for="error of v$.category.icon.$errors" :key="error.$uid">
+              {{ error.$message }}
+            </p>
           </div>
         </CForm>
       </CModalBody>
@@ -78,6 +82,8 @@
 
 <script>
 import { ref } from 'vue'
+import useVuelidate from "@vuelidate/core"
+import { required, helpers } from "@vuelidate/validators";
 export default {
   name: 'Categories',
   setup() {
@@ -87,8 +93,21 @@ export default {
     return {
       categories,
       addCategoryModal,
-      category: { label: null, icon: null },
-      file
+      category: ref({ label: null, icon: null }),
+      file,
+      v$: useVuelidate()
+    }
+  },
+  validations() {
+    return {
+      category: {
+        label: {
+          required: helpers.withMessage("Category label is required", required)
+        },
+        icon: {
+          required: helpers.withMessage("Category icon is required", required)
+        }
+      }
     }
   },
   // data() {
@@ -100,6 +119,11 @@ export default {
   components: {
   },
   methods: {
+    openAddCategoryModal() {
+      this.category = { label: null, icon: null }
+      this.v$.$reset()
+      this.addCategoryModal = true
+    },
     async uploadFile(file) {
       const formData = new FormData();
       formData.append("file", file);
@@ -114,13 +138,8 @@ export default {
         console.log(error)
       }
     },
-    async uploadIconImage($event) {
-      const input = $event.target;
-      let file = input.files && input.files[0] ? input.files[0] : null
-      if (!file) {
-        return;
-      }
-      this.category.icon = await this.uploadFile(file);
+    async uploadIconImage(imageUrl) {
+      this.category.icon = imageUrl;
 
     },
     getCategories() {
@@ -142,7 +161,9 @@ export default {
         this.getCategories()
       })
     },
-    saveCategory() {
+    async saveCategory() {
+      const result = await this.v$.$validate()
+      if (!result) return
       const url = `${process.env.VUE_APP_API_URL}api/v1/admin/category`
       this.axios.post(url, this.category).then(() => {
         this.$swal("Category successfully added");

@@ -15,6 +15,11 @@ import axios from 'axios'
 import VueAxios from 'vue-axios'
 import dayjs from 'dayjs'
 
+import FileUploader from '@/components/FileUploader.vue'
+
+// import Vuelidate from 'vuelidate'
+// Vue.use(Vuelidate)
+
 // Add a request interceptor
 axios.interceptors.request.use(
   function (config) {
@@ -36,6 +41,7 @@ app.use(router)
 app.use(CoreuiVue)
 app.provide('icons', icons)
 app.component('CIcon', CIcon)
+app.component('file-uploader', FileUploader)
 app.component('DocsExample', DocsExample)
 app.use(VueAxios, axios)
 app.use(VueSweetalert2)

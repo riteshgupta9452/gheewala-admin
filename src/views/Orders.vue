@@ -13,7 +13,11 @@
                   <CTableHeaderCell class="text-center">Mobile</CTableHeaderCell>
                   <CTableHeaderCell class="text-center">status</CTableHeaderCell>
                   <CTableHeaderCell class="text-center">No. of items</CTableHeaderCell>
-                  <CTableHeaderCell class="text-center">Order amount</CTableHeaderCell>
+                  <CTableHeaderCell class="text-center">Sub Total</CTableHeaderCell>
+                  <CTableHeaderCell class="text-center">Discount</CTableHeaderCell>
+                  <CTableHeaderCell class="text-center">Promocode</CTableHeaderCell>
+                  <CTableHeaderCell class="text-center">Shipping</CTableHeaderCell>
+                  <CTableHeaderCell class="text-center">Total</CTableHeaderCell>
                   <CTableHeaderCell class="text-center">Activity</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
@@ -35,6 +39,18 @@
                   </CTableDataCell>
                   <CTableDataCell class="text-center">
                     {{ order.total }}
+                  </CTableDataCell>
+                  <CTableDataCell class="text-center">
+                    {{ order.discount }}
+                  </CTableDataCell>
+                  <CTableDataCell class="text-center">
+                    {{ order.promocode }}
+                  </CTableDataCell>
+                  <CTableDataCell class="text-center">
+                    {{ order.shiping_charges }}
+                  </CTableDataCell>
+                  <CTableDataCell class="text-center">
+                    {{ order.payable }}
                   </CTableDataCell>
                   <CTableDataCell class="text-center">
                     <CButton color="primary" variant="ghost" @click="viewOrderDetailModal(order)">View Products</CButton>
@@ -88,17 +104,17 @@
             </CTableRow>
           </CTableHead>
           <CTableBody>
-            <CTableRow v-for="(item, index) in order.items" :key="order._id">
+            <CTableRow v-for="(item, index) in order.products" :key="order._id">
               <CTableDataCell class="text-center">
                 {{ index + 1 }}
               </CTableDataCell>
-              <CTableDataCell class="text-center">{{ item.label }}
+              <CTableDataCell class="text-center">{{ item.product.label }}
               </CTableDataCell>
               <CTableDataCell class="text-center">
                 {{ order.products[index].quantity }}
               </CTableDataCell>
               <CTableDataCell class="text-center">
-                {{ item.price[order.user.user_type] }}
+                {{ item.product.price[order.user.user_type] }}
               </CTableDataCell>
             </CTableRow>
           </CTableBody>

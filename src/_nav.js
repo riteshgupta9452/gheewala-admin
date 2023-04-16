@@ -45,6 +45,12 @@ export default [
     to: '/products',
     icon: 'cil-speedometer',
   },
+  {
+    component: 'CNavItem',
+    name: 'Offers',
+    to: '/offers',
+    icon: 'cil-speedometer',
+  },
   // {
   //   component: 'CNavTitle',
   //   name: 'Theme',

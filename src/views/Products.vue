@@ -5,7 +5,7 @@
                 <CCard class="mb-4">
                     <CCardHeader> Products </CCardHeader>
                     <CCardBody>
-                        <CButton color="primary" style="margin-bottom: 10px;" @click="() => { showAddProductModal = true }">
+                        <CButton color="primary" style="margin-bottom: 10px;" @click="openAddProductModal()">
                             Add new product </CButton>
                         <br>
                         <CTable align="middle" class="mb-0 border" hover responsive bordered>
@@ -71,9 +71,10 @@
             <CModalBody>
                 <CRow>
                     <CCol>
-                        <CFormLabel class="col-form-label">Product Image</CFormLabel>
-                        <CFormInput class="form-control" type="file" placeholder="Select product image" accept="image/*"
-                            @change="uploadProductImage" />
+                        <file-uploader :label="'Product Image'" @upload="uploadProductImage"></file-uploader>
+                        <p style="color: red;" v-for="error of v$.productDetail.image.$errors" :key="error.$uid">
+                            {{ error.$message }}
+                        </p>
                     </CCol>
                 </CRow>
                 <CRow>
@@ -81,6 +82,9 @@
                         <CFormLabel class="col-form-label"> Product Name </CFormLabel>
                         <CFormInput class="form-control" type="text" v-model="productDetail.label"
                             placeholder="Enter product name" />
+                        <p style="color: red;" v-for="error of v$.productDetail.label.$errors" :key="error.$uid">
+                            {{ error.$message }}
+                        </p>
                     </CCol>
                 </CRow>
                 <CRow>
@@ -88,6 +92,9 @@
                         <CFormLabel class="col-form-label"> Description </CFormLabel>
                         <CFormInput class="form-control" type="text" v-model="productDetail.subtext"
                             placeholder="Enter Product description (e.g. 500 gms jar)" />
+                        <p style="color: red;" v-for="error of v$.productDetail.subtext.$errors" :key="error.$uid">
+                            {{ error.$message }}
+                        </p>
                     </CCol>
                 </CRow>
                 <CRow>
@@ -95,6 +102,9 @@
                         <CFormLabel class="col-form-label"> Inventory </CFormLabel>
                         <CFormInput class="form-control" type="number" v-model="productDetail.inventory"
                             placeholder="Enter avaible product count " />
+                        <p style="color: red;" v-for="error of v$.productDetail.inventory.$errors" :key="error.$uid">
+                            {{ error.$message }}
+                        </p>
                     </CCol>
                 </CRow>
                 <CRow>
@@ -107,6 +117,9 @@
                             }}
                             </option>
                         </CFormSelect>
+                        <p style="color: red;" v-for="error of v$.productDetail.category.$errors" :key="error.$uid">
+                            {{ error.$message }}
+                        </p>
                     </CCol>
                 </CRow>
                 <CRow>
@@ -129,6 +142,9 @@
                         <CFormLabel class="col-form-label"> {{ userType }} </CFormLabel>
                         <CFormInput class="form-control" type="number" v-model="productDetail.price[userType]"
                             placeholder="Enter avaible product count " />
+                        <p style="color: red;" v-for="error of v$.productDetail.price[userType].$errors" :key="error.$uid">
+                            {{ error.$message }}
+                        </p>
                     </CCol>
                 </CRow>
             </CModalBody>
@@ -146,11 +162,15 @@
 // import dayjs from 'dayjs'
 import Pagination from 'v-pagination-3';
 import upload from "../mixins/upload.vue";
+import useVuelidate from "@vuelidate/core"
+import { required, helpers, numeric } from "@vuelidate/validators";
+
 export default {
     name: 'Products',
     mixins: [upload],
     data() {
         return {
+            v$: useVuelidate(),
             categories: [],
             products: [],
             product: null,
@@ -170,17 +190,41 @@ export default {
             }
         }
     },
+    validations() {
+        const price = {}
+        this.userTypes.forEach(userType => {
+            price[userType] = { required: helpers.withMessage(`${userType} product price is required`, required), numeric }
+        })
+        return {
+            productDetail: {
+                label: { required: helpers.withMessage("Product Label is required", required) },
+                subtext: { required: helpers.withMessage("Product Description is required", required) },
+                inventory: { required: helpers.withMessage("Product inventory is required", required), numeric },
+                category: { required: helpers.withMessage("Product Category is required", required) },
+                image: { required: helpers.withMessage("Product Image is required", required) },
+                price: price
+            }
+        }
+    },
     components: {
         Pagination
     },
     methods: {
-        async uploadProductImage($event) {
-            const input = $event.target;
-            let file = input.files && input.files[0] ? input.files[0] : null
-            if (!file) {
-                return;
+        openAddProductModal() {
+            this.productDetail = {
+                label: null,
+                subtext: null,
+                inventory: 0,
+                category: "",
+                image: null,
+                is_viewable: false,
+                price: {}
             }
-            this.productDetail.image = await this.uploadFile(file);
+            this.v$.$reset()
+            this.showAddProductModal = true
+        },
+        async uploadProductImage(image) {
+            this.productDetail.image = image;
         },
         paginateProducts(page) { this.page = page; this.getProducts() },
         getProducts() {
@@ -205,7 +249,10 @@ export default {
                 // this.$forceUpdate()
             })
         },
-        createProduct() {
+        async createProduct() {
+            const result = await this.v$.$validate()
+            if (!result) return
+
             if (this.productDetail._id) {
                 const url = `${process.env.VUE_APP_API_URL}api/v1/admin/products/${this.productDetail._id}`
                 delete this.productDetail._id
@@ -231,6 +278,7 @@ export default {
             const url = `${process.env.VUE_APP_API_URL}api/v1/admin/products/${id}`
             this.axios.get(url).then((response) => {
                 this.productDetail = response.data.data
+                this.v$.$reset()
                 this.showAddProductModal = true
             })
         }

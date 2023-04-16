@@ -5,8 +5,7 @@
                 <CCard class="mb-4">
                     <CCardHeader> Dashboard Categories </CCardHeader>
                     <CCardBody>
-                        <CButton color="primary" style="margin-bottom: 10px;"
-                            @click="() => { addDashboardCategoryModal = true }">Add
+                        <CButton color="primary" style="margin-bottom: 10px;" @click="openDashboardCategoryModal()">Add
                             new Dashboard Category</CButton>
                         <CTable align="middle" class="mb-0 border" hover responsive>
                             <CTableHead color="light">
@@ -63,6 +62,9 @@
                         <CFormLabel for="label">Title</CFormLabel>
                         <CFormInput id="label" type="text" placeholder="Enter title (e.g. Trending)"
                             v-model="category.title" />
+                        <p style="color: red;" v-for="error of v$.category.title.$errors" :key="error.$uid">
+                            {{ error.$message }}
+                        </p>
                     </div>
                     <div>
                         <CFormLabel class="col-form-label">Is viewable</CFormLabel>
@@ -177,6 +179,8 @@
 import { ref } from 'vue'
 import upload from "../mixins/upload.vue";
 import Pagination from 'v-pagination-3';
+import useVuelidate from '@vuelidate/core';
+import { required, helpers } from '@vuelidate/validators';
 export default {
     name: 'Banners',
     mixins: [upload],
@@ -190,9 +194,10 @@ export default {
         const recordPerPage = ref(10)
         const productDetail = ref({})
         return {
+            v$: useVuelidate(),
             categories,
             addDashboardCategoryModal,
-            category: { title: null, is_viewable: false },
+            category: ref({ title: null, is_viewable: false }),
             file,
             addDashboardProductsModal,
             page,
@@ -202,11 +207,22 @@ export default {
             search: null
         }
     },
-
+    validations() {
+        return {
+            category: {
+                title: { required: helpers.withMessage("Title is required", required) }
+            }
+        }
+    },
     components: {
         Pagination
     },
     methods: {
+        openDashboardCategoryModal() {
+            this.category = { title: null, is_viewable: false }
+            this.v$.$reset()
+            this.addDashboardCategoryModal = true
+        },
         async showDashboardProductsModal(id) {
             const url = `${process.env.VUE_APP_API_URL}api/v1/admin/app-dashboard/${id}`;
             this.axios.get(url).then((response) => {
@@ -215,16 +231,6 @@ export default {
             })
         },
         async updateProduct(activity = "add", index = 0, productId = "") {
-            // let message = "Are you sure want to add this product on dashboard ?"
-            // if (activity == "remove") {
-            //     message = "Are you sure want to remove this product from dashboard ?"
-            // }
-            // const confirm = await this.$swal.fire({
-            //     title: message,
-            //     showCancelButton: true,
-            //     confirmButtonText: activity,
-            // });
-            // if (!confirm.isConfirmed) return false;
             if (activity == "add") {
                 this.productDetail.products_id.push(productId)
             } else {
@@ -281,7 +287,9 @@ export default {
                 this.getDashboardCategory()
             })
         },
-        saveCategory() {
+        async saveCategory() {
+            const result = await this.v$.$validate()
+            if (!result) return false;
             const url = `${process.env.VUE_APP_API_URL}api/v1/admin/app-dashboard`
             this.axios.post(url, this.category).then(() => {
                 this.$swal("Category successfully added");
