@@ -7,34 +7,10 @@
       <CHeaderBrand class="mx-auto d-lg-none" to="/">
         <CIcon :icon="logo" height="48" alt="Logo" />
       </CHeaderBrand>
-      <CHeaderNav class="d-none d-md-flex me-auto">
-        <CNavItem>
-          <CNavLink href="/dashboard"> Dashboard </CNavLink>
-        </CNavItem>
-        <CNavItem>
-          <CNavLink href="#">Users</CNavLink>
-        </CNavItem>
-        <CNavItem>
-          <CNavLink href="#">Settings</CNavLink>
-        </CNavItem>
-      </CHeaderNav>
       <CHeaderNav>
         <CNavItem>
-          <CNavLink href="#">
-            <CIcon class="mx-2" icon="cil-bell" size="lg" />
-          </CNavLink>
+          <CNavLink @click="logout">Logout</CNavLink>
         </CNavItem>
-        <CNavItem>
-          <CNavLink href="#">
-            <CIcon class="mx-2" icon="cil-list" size="lg" />
-          </CNavLink>
-        </CNavItem>
-        <CNavItem>
-          <CNavLink href="#">
-            <CIcon class="mx-2" icon="cil-envelope-open" size="lg" />
-          </CNavLink>
-        </CNavItem>
-        <AppHeaderDropdownAccnt />
       </CHeaderNav>
     </CContainer>
     <CHeaderDivider />
@@ -59,5 +35,18 @@ export default {
       logo,
     }
   },
+  methods: {
+    async logout() {
+      const confirm = await this.$swal.fire({
+        title: 'Are you sure want to logout ?',
+        showCancelButton: true,
+        confirmButtonText: 'Yes',
+        cancelButtonText: "No"
+      });
+      if (!confirm.isConfirmed) return false;
+      localStorage.removeItem("token")
+      this.$router.replace("/")
+    }
+  }
 }
 </script>

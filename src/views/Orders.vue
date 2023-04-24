@@ -9,10 +9,12 @@
               <CTableHead color="light">
                 <CTableRow>
                   <CTableHeaderCell class="text-center">#</CTableHeaderCell>
-                  <CTableHeaderCell class="text-center">Name</CTableHeaderCell>
-                  <CTableHeaderCell class="text-center">Mobile</CTableHeaderCell>
-                  <CTableHeaderCell class="text-center">status</CTableHeaderCell>
+                  <CTableHeaderCell class="text-center">Firm Name</CTableHeaderCell>
+                  <CTableHeaderCell class="text-center">Contact Person Name</CTableHeaderCell>
+                  <CTableHeaderCell class="text-center">Contact Person Mobile</CTableHeaderCell>
+                  <CTableHeaderCell class="text-center">Status</CTableHeaderCell>
                   <CTableHeaderCell class="text-center">No. of items</CTableHeaderCell>
+                  <CTableHeaderCell class="text-center">Order By</CTableHeaderCell>
                   <CTableHeaderCell class="text-center">Sub Total</CTableHeaderCell>
                   <CTableHeaderCell class="text-center">Discount</CTableHeaderCell>
                   <CTableHeaderCell class="text-center">Promocode</CTableHeaderCell>
@@ -26,16 +28,21 @@
                   <CTableDataCell class="text-center">
                     {{ index + 1 }}
                   </CTableDataCell>
-                  <CTableDataCell class="text-center">{{ order.user.name }}
+                  <CTableDataCell class="text-center">{{ order.user.firm_name }}
+                  </CTableDataCell>
+                  <CTableDataCell class="text-center">{{ order.address.address.name }}
                   </CTableDataCell>
                   <CTableDataCell class="text-center">
-                    {{ order.user.phone_number }}
+                    {{ order.address.address.mobile }}
                   </CTableDataCell>
                   <CTableDataCell class="text-center">
                     {{ order.status }}
                   </CTableDataCell>
                   <CTableDataCell class="text-center">
                     {{ order.products.length }}
+                  </CTableDataCell>
+                  <CTableDataCell class="text-center">
+                    {{ order.user.name }} <br /> {{ order.user.phone_number }}
                   </CTableDataCell>
                   <CTableDataCell class="text-center">
                     {{ order.total }}
@@ -64,19 +71,23 @@
         </CCard>
       </CCol>
     </CRow>
-    <CModal scrollable :visible="showOrderDetailModal" backdrop="static" size="xl" @close="
-      () => {
+    <CModal scrollable :visible="showOrderDetailModal" backdrop="static" size="xl" @close="() => {
         showOrderDetailModal = false
       }
-    ">
-      <CModalHeader dismiss @close="
-        () => {
+      ">
+      <CModalHeader dismiss @close="() => {
           showOrderDetailModal = false
         }
-      ">
+        ">
         <CModalTitle>Items</CModalTitle>
       </CModalHeader>
       <CModalBody>
+        <b>Firm Name : </b><span>{{ order.user.firm_name }}</span>
+        <br />
+        <b>Order By : </b><span>{{ order.user.name }} & {{ order.user.phone_number }}</span>
+        <br />
+        <b>Contact Person Name : </b><span>{{ order.address.address.name }} & {{ order.address.address.mobile }}</span>
+        <br />
         <b>Shipping Address : </b>
         <span>
           {{ order.address.address.house_flat_no }}, {{ order.address.address.building_name }},
@@ -100,7 +111,8 @@
               <CTableHeaderCell class="text-center">#</CTableHeaderCell>
               <CTableHeaderCell class="text-center">Product</CTableHeaderCell>
               <CTableHeaderCell class="text-center">Quantity</CTableHeaderCell>
-              <CTableHeaderCell class="text-center">Price</CTableHeaderCell>
+              <CTableHeaderCell class="text-center">Product Price</CTableHeaderCell>
+              <CTableHeaderCell class="text-center">Total Price</CTableHeaderCell>
             </CTableRow>
           </CTableHead>
           <CTableBody>
@@ -111,14 +123,37 @@
               <CTableDataCell class="text-center">{{ item.product.label }}
               </CTableDataCell>
               <CTableDataCell class="text-center">
-                {{ order.products[index].quantity }}
+                {{ item.quantity }}
               </CTableDataCell>
               <CTableDataCell class="text-center">
                 {{ item.product.price[order.user.user_type] }}
               </CTableDataCell>
+              <CTableDataCell class="text-center">
+                {{ item.product_total }}
+              </CTableDataCell>
             </CTableRow>
           </CTableBody>
         </CTable>
+        <CRow>
+          <CCol style="text-align: right;">
+            <b>Sub Total : </b> <span>{{ order.total }}</span>
+          </CCol>
+        </CRow>
+        <CRow>
+          <CCol style="text-align: right;">
+            <b>Shipping : </b> <span>{{ order.shiping_charges }}</span>
+          </CCol>
+        </CRow>
+        <CRow>
+          <CCol style="text-align: right;">
+            <b>Coupon : </b> <span>{{ order.promocode }}</span> <span>- {{ order.discount }}</span>
+          </CCol>
+        </CRow>
+        <CRow>
+          <CCol style="text-align: right;">
+            <b>Total : </b><span>{{ order.payable }}</span>
+          </CCol>
+        </CRow>
       </CModalBody>
       <CModalFooter>
         <CButton color="secondary" @click="() => { showOrderDetailModal = false }">

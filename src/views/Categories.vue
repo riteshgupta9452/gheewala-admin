@@ -33,6 +33,9 @@
                     <CButton :color="category.is_viewable ? 'danger' : 'success'" variant="ghost"
                       @click="toggleStatus(category._id)">{{ category.is_viewable ? 'Hide' : 'Show' }}
                     </CButton>
+                    <CButton v-if="category.product_count <= 0" color="danger" variant="ghost"
+                      @click="deleteCategory(category._id)">Delete
+                    </CButton>
                   </CTableDataCell>
                 </CTableRow>
               </CTableBody>
@@ -41,16 +44,14 @@
         </CCard>
       </CCol>
     </CRow>
-    <CModal scrollable :visible="addCategoryModal" backdrop="static" size="xl" @close="
-      () => {
+    <CModal scrollable :visible="addCategoryModal" backdrop="static" size="xl" @close="() => {
         addCategoryModal = false
       }
-    ">
-      <CModalHeader dismiss @close="
-        () => {
+      ">
+      <CModalHeader dismiss @close="() => {
           addCategoryModal = false
         }
-      ">
+        ">
         <CModalTitle>Add new Category</CModalTitle>
       </CModalHeader>
       <CModalBody>
@@ -171,7 +172,19 @@ export default {
         this.getCategories()
         this.addCategoryModal = false
       })
-    }
+    },
+    async deleteCategory(id) {
+      const confirm = await this.$swal.fire({
+        title: 'Are you sure want to delete the category ?',
+        showCancelButton: true,
+        confirmButtonText: 'Delete',
+      });
+      if (!confirm.isConfirmed) return false;
+      const url = `${process.env.VUE_APP_API_URL}api/v1/admin/category/${id}`;
+      this.axios.delete(url).then((response) => {
+        this.getCategories()
+      })
+    },
   },
   mounted() {
     this.getCategories();
